@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graphing Calculator</title>
     <style>
-        /* Basic styling for the calculator layout */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -56,96 +55,145 @@
 </head>
 <body>
     <div class="calculator">
-        <!-- Output Field -->
         <div class="output" id="output">
             0
         </div>
 
-        <!-- Button Grid -->
         <div class="button-grid">
             <!-- Row 1 -->
-            <button>(</button>
-            <button>)</button>
-            <button>|</button>
-            <button>[</button>
-            <button>]</button>
-            <button>√</button>
-            <button>∛</button>
-            <button>≥</button>
-            <button>Trig Functions</button> <!-- Placeholder for dropdown or multi-function trig button -->
-            <button>Table</button> <!-- Placeholder for matrix or table button -->
-            <button>f(x)</button>
-            <button>Piecewise</button>
+            <button onclick="appendText('(')"> ( </button>
+            <button onclick="appendText(')')"> ) </button>
+            <button onclick="appendText('|')"> | </button>
+            <button onclick="appendText('[')"> [ </button>
+            <button onclick="appendText(']')"> ] </button>
+            <button onclick="appendText('√')"> √ </button>
+            <button onclick="appendText('∛')"> ∛ </button>
+            <button onclick="appendText('≥')"> ≥ </button>
+            <button onclick="toggleTrigFunctions()"> Trig </button>
+            <button onclick="toggleTable()"> Table </button>
+            <button onclick="appendText('f(x)')"> f(x) </button>
+            <button onclick="insertPiecewise()"> Piecewise </button>
 
             <!-- Row 2 -->
-            <button>x</button>
-            <button>7</button>
-            <button>8</button>
-            <button>9</button>
-            <button>Fraction</button>
-            <button>Base ^ Exponent</button>
-            <button>Base & Subscript</button>
-            <button>≤</button>
-            <button>ln</button>
-            <button>e</button>
-            <button>∅</button>
-            <button>°</button>
+            <button onclick="appendText('x')"> x </button>
+            <button onclick="appendText('7')"> 7 </button>
+            <button onclick="appendText('8')"> 8 </button>
+            <button onclick="appendText('9')"> 9 </button>
+            <button onclick="insertFraction()"> Fraction </button>
+            <button onclick="appendText('^')"> ^ </button>
+            <button onclick="insertBaseSubscript()"> Base/Subscript </button>
+            <button onclick="appendText('≤')"> ≤ </button>
+            <button onclick="appendText('ln')"> ln </button>
+            <button onclick="appendText('e')"> e </button>
+            <button onclick="appendText('∅')"> ∅ </button>
+            <button onclick="appendText('°')"> ° </button>
 
             <!-- Row 3 -->
-            <button>y</button>
-            <button>4</button>
-            <button>5</button>
-            <button>6</button>
-            <button>/</button>
-            <button>^</button>
-            <button>x</button>
-            <button>></button>
-            <button>log</button>
-            <button>log_b</button>
-            <button>i</button>
-            <button>π</button>
+            <button onclick="appendText('y')"> y </button>
+            <button onclick="appendText('4')"> 4 </button>
+            <button onclick="appendText('5')"> 5 </button>
+            <button onclick="appendText('6')"> 6 </button>
+            <button onclick="appendText('/')"> / </button>
+            <button onclick="appendText('^')"> ^ </button>
+            <button onclick="appendText('x')"> x </button>
+            <button onclick="appendText('>')"> > </button>
+            <button onclick="appendText('log')"> log </button>
+            <button onclick="appendText('log_b')"> log_b </button>
+            <button onclick="appendText('i')"> i </button>
+            <button onclick="appendText('π')"> π </button>
 
             <!-- Row 4 -->
-            <button>z</button>
-            <button>1</button>
-            <button>2</button>
-            <button>3</button>
-            <button>-</button>
-            <button>+</button>
-            <button>/</button>
-            <button><</button>
-            <button>Mixed Fraction</button>
-            <button>Coordinate</button>
-            <button>r</button>
-            <button>!</button>
+            <button onclick="appendText('z')"> z </button>
+            <button onclick="appendText('1')"> 1 </button>
+            <button onclick="appendText('2')"> 2 </button>
+            <button onclick="appendText('3')"> 3 </button>
+            <button onclick="appendText('-')"> - </button>
+            <button onclick="appendText('+')"> + </button>
+            <button onclick="appendText('/')"> / </button>
+            <button onclick="appendText('<')"> < </button>
+            <button onclick="insertMixedFraction()"> Mixed Fraction </button>
+            <button onclick="insertCoordinate()"> Coordinate </button>
+            <button onclick="appendText('r')"> r </button>
+            <button onclick="appendText('!')"> ! </button>
 
             <!-- Row 5 -->
-            <button>abc</button>
-            <button>,</button>
-            <button>0</button>
-            <button>.</button>
-            <button>%</button>
-            <button>Spacebar</button>
-            <button>=</button>
-            <button>←</button>
-            <button>→</button>
-            <button>x</button>
-            <button>Enter</button>
+            <button onclick="insertAlphabet()"> abc </button>
+            <button onclick="appendText(',')"> , </button>
+            <button onclick="appendText('0')"> 0 </button>
+            <button onclick="appendText('.')"> . </button>
+            <button onclick="appendText('%')"> % </button>
+            <button onclick="appendText(' ')"> Space </button>
+            <button onclick="calculate()"> = </button>
+            <button onclick="moveCursor('left')"> ← </button>
+            <button onclick="moveCursor('right')"> → </button>
+            <button onclick="deleteLast()"> x </button>
+            <button onclick="submitInput()"> Enter </button>
         </div>
     </div>
 
     <script>
-        // Example of handling button clicks to display input
-        document.querySelectorAll('.button-grid button').forEach(button => {
-            button.addEventListener('click', function() {
-                let output = document.getElementById('output');
-                if (output.innerText === '0') {
-                    output.innerText = button.innerText;
-                } else {
-                    output.innerText += button.innerText;
-                }
-            });
-        });
+        function appendText(text) {
+            let output = document.getElementById('output');
+            if (output.innerText === '0') {
+                output.innerText = text;
+            } else {
+                output.innerText += text;
+            }
+        }
+
+        function toggleTrigFunctions() {
+            // Add functionality for trig functions (sin, cos, tan, etc.)
+        }
+
+        function toggleTable() {
+            // Add functionality for table-related input
+        }
+
+        function insertPiecewise() {
+            // Add functionality for piecewise input
+        }
+
+        function insertFraction() {
+            // Add functionality for fraction input
+        }
+
+        function insertBaseSubscript() {
+            // Add functionality for base and subscript here
+        }
+
+        function insertMixedFraction() {
+            // Add functionality for mixed fraction here
+        }
+
+        function insertCoordinate() {
+            // Add functionality for coordinate input here
+        }
+
+        function insertAlphabet() {
+            // Button to input alphabet characters for variable names
+        }
+
+        function calculate() {
+            let output = document.getElementById('output');
+            try {
+                output.innerText = eval(output.innerText); // Basic eval for now
+            } catch (e) {
+                output.innerText = "Error";
+            }
+        }
+
+        function moveCursor(direction) {
+            // Implement cursor movement if needed
+        }
+
+        function deleteLast() {
+            let output = document.getElementById('output');
+            output.innerText = output.innerText.slice(0, -1);
+        }
+
+        function submitInput() {
+            // Handle the submission of the input
+        }
     </script>
 </body>
 </html>
