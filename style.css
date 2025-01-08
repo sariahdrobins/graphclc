@@ -1,1 +1,66 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2em;
+    color: #333;
+}
+
+.input-section, .graphing-section, .keyboard-section {
+    margin-bottom: 30px;
+}
+
+#math-input {
+    border: 2px solid #333;
+    padding: 10px;
+    background-color: #fff;
+    width: 80%;
+    margin: 0 auto;
+    min-height: 50px;
+    font-size: 1.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#graph-area {
+    width: 100%;
+    height: 300px;
+    border: 2px solid #333;
+    background-color: #fff;
+    margin: 0 auto;
+}
+
+#math-keyboard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 1.5em;
+    padding: 20px;
+    border: none;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 50px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
 
