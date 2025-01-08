@@ -9,10 +9,13 @@ window.onload = function() {
 
     // Define the buttons for the Math Keyboard
     const buttons = [
-        '7', '8', '9', '/', 'sin', 'cos', 'tan',
-        '4', '5', '6', '*', '(', ')', '^',
-        '1', '2', '3', '-', 'sqrt', 'x²', 'log',
-        '0', '.', '=', '+'
+        '7', '8', '9', '/', '(', ')', 'x^y',
+        '4', '5', '6', '*', '+', '-', '√',
+        'sin', 'cos', 'tan', 'sec', 'csc', 'cot', 'sin⁻¹',
+        'ln', 'log', 'log_b', 'e^x', 'a^x', 'π', 'e',
+        'd/dx', '∫', 'lim', 'Σ',
+        'Matrix+', 'Matrix-', 'Matrix×', 'dot', 'cross', 'x,y,z',
+        '%', '0', '.', '='
     ];
 
     // Create buttons and add them to the keyboard section
@@ -24,4 +27,3 @@ window.onload = function() {
         keyboardSection.appendChild(buttonElement);
     });
 };
-
