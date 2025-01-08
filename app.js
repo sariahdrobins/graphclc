@@ -9,8 +9,6 @@ window.onload = function() {
 
     // Define the buttons for the Math Keyboard
     const buttons = [
-        '7', '8', '9', '/', '(', ')', 'x^y',
-        '4', '5', '6', '*', '+', '-', '√',
         'sin', 'cos', 'tan', 'sec', 'csc', 'cot', 'sin⁻¹',
         'ln', 'log', 'log_b', 'e^x', 'a^x', 'π', 'e',
         'd/dx', '∫', 'lim', 'Σ',
