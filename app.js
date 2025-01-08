@@ -12,7 +12,7 @@ window.onload = function() {
         'sin', 'cos', 'tan', 'sec', 'csc', 'cot', 'sin⁻¹',
         'ln', 'log', 'log_b', 'e^x', 'a^x', 'π', 'e',
         'd/dx', '∫', 'lim', 'Σ',
-        'Matrix+', 'Matrix-', 'Matrix×', 'dot', 'cross', 'x,y,z',
+        'Matrix+', 'Matrix-', 'Matrix×', 'dot', 'cross', 'x','y','z',
         '%', '0', '.', '='
     ];
 
