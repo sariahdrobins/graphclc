@@ -4,89 +4,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graphing Calculator</title>
-    <link rel="stylesheet" href="style.css"> <!-- Linking the CSS -->
+    <style>
+        /* Basic styling for the calculator layout */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .calculator {
+            background-color: #e5e5e5;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+        }
+        .calculator input, .calculator .button-grid {
+            width: 100%;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 10px;
+        }
+        .button-grid button {
+            padding: 15px;
+            background-color: #d8d8d8;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button-grid button:hover {
+            background-color: #b8b8b8;
+        }
+        .output {
+            background-color: #fff;
+            padding: 20px;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: right;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Graphing Calculator</h1>
-        </header>
+    <div class="calculator">
+        <!-- Output Field -->
+        <div class="output" id="output">
+            0
+        </div>
 
-        <section class="input-section">
-            <div id="math-input">
-                <!-- Math Input Field will go here -->
-            </div>
-        </section>
+        <!-- Button Grid -->
+        <div class="button-grid">
+            <!-- Row 1 -->
+            <button>(</button>
+            <button>)</button>
+            <button>|</button>
+            <button>[</button>
+            <button>]</button>
+            <button>√</button>
+            <button>∛</button>
+            <button>≥</button>
+            <button>Trig Functions</button> <!-- Placeholder for dropdown or multi-function trig button -->
+            <button>Table</button> <!-- Placeholder for matrix or table button -->
+            <button>f(x)</button>
+            <button>Piecewise</button>
 
-        <section class="graphing-section">
-            <div id="graph-area">
-                <!-- Graphing Area (for plotting equations) will go here -->
-            </div>
-        </section>
+            <!-- Row 2 -->
+            <button>x</button>
+            <button>7</button>
+            <button>8</button>
+            <button>9</button>
+            <button>Fraction</button>
+            <button>Base ^ Exponent</button>
+            <button>Base & Subscript</button>
+            <button>≤</button>
+            <button>ln</button>
+            <button>e</button>
+            <button>∅</button>
+            <button>°</button>
 
-        <section class="keyboard-section">
-            <div id="math-keyboard">
-    <!-- Row 1: Numbers and basic operators -->
-    <button>7</button>
-    <button>8</button>
-    <button>9</button>
-    <button>/</button>
-    <button>(</button>
-    <button>)</button>
-    <button>x^y</button>
-    
-    <!-- Row 2: Algebraic operations and exponents -->
-    <button>4</button>
-    <button>5</button>
-    <button>6</button>
-    <button>*</button>
-    <button>+ </button>
-    <button>-</button>
-    <button>√</button>
-    
-    <!-- Row 3: Trigonometric functions -->
-    <button>sin</button>
-    <button>cos</button>
-    <button>tan</button>
-    <button>sec</button>
-    <button>csc</button>
-    <button>cot</button>
-    <button>sin⁻¹</button>
+            <!-- Row 3 -->
+            <button>y</button>
+            <button>4</button>
+            <button>5</button>
+            <button>6</button>
+            <button>/</button>
+            <button>^</button>
+            <button>x</button>
+            <button>></button>
+            <button>log</button>
+            <button>log_b</button>
+            <button>i</button>
+            <button>π</button>
 
-    <!-- Row 4: Logarithmic and exponential functions -->
-    <button>ln</button>
-    <button>log</button>
-    <button>log_b</button>
-    <button>e^x</button>
-    <button>a^x</button>
-    <button>π</button>
-    <button>e</button>
+            <!-- Row 4 -->
+            <button>z</button>
+            <button>1</button>
+            <button>2</button>
+            <button>3</button>
+            <button>-</button>
+            <button>+</button>
+            <button>/</button>
+            <button><</button>
+            <button>Mixed Fraction</button>
+            <button>Coordinate</button>
+            <button>r</button>
+            <button>!</button>
 
-    <!-- Row 5: Calculus operations -->
-    <button>d/dx</button>
-    <button>∫</button>
-    <button>lim</button>
-    <button>Σ</button>
-
-    <!-- Row 6: Matrix and vector operations -->
-    <button>Matrix+</button>
-    <button>Matrix-</button>
-    <button>Matrix×</button>
-    <button>dot</button>
-    <button>cross</button>
-    <button>x, y, z</button>
-
-    <!-- Row 7: Additional functionality -->
-    <button>%</button>
-    <button>0</button>
-    <button>.</button>
-    <button>=</button>
-</div>
-
-        </section>
+            <!-- Row 5 -->
+            <button>abc</button>
+            <button>,</button>
+            <button>0</button>
+            <button>.</button>
+            <button>%</button>
+            <button>Spacebar</button>
+            <button>=</button>
+            <button>←</button>
+            <button>→</button>
+            <button>x</button>
+            <button>Enter</button>
+        </div>
     </div>
 
-    <script src="app.js"></script> <!-- Linking the JS file -->
+    <script>
+        // Example of handling button clicks to display input
+        document.querySelectorAll('.button-grid button').forEach(button => {
+            button.addEventListener('click', function() {
+                let output = document.getElementById('output');
+                if (output.innerText === '0') {
+                    output.innerText = button.innerText;
+                } else {
+                    output.innerText += button.innerText;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
-
