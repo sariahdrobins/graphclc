@@ -1,25 +1,38 @@
-// Toggle the trig functions dropdown
-function toggleTrigDropdown() {
-    var dropdown = document.getElementById("trigDropdown");
-    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-}
-
-// Append text to the output
+// Function to append text to the output (handles trigonometric functions properly)
 function appendText(text) {
     let output = document.getElementById('output');
     if (output.innerText === '0') {
         output.innerText = text;
     } else {
-        output.innerText += text;
+        // Ensure that trigonometric functions like sin, cos, etc., append with parentheses
+        if (["sin", "cos", "tan", "arcsin", "arccos", "arctan", "sinh", "cosh", "tanh", "cot", "arccot", "sec", "arcsec", "csc", "arccsc"].includes(text)) {
+            output.innerText += text + "("; // Add parentheses for trig functions
+        } else {
+            output.innerText += text;
+        }
     }
+}
+
+// Function to toggle the trig functions dropdown
+function toggleTrigDropdown() {
+    var dropdown = document.getElementById("trigDropdown");
+    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
 }
 
 // Function to calculate the result based on the input
 function calculate() {
     let output = document.getElementById('output');
     try {
-        let result = eval(output.innerText); // Basic eval for now
+        // Ensure that all mathematical functions (like sin, cos, etc.) are properly recognized
+        let equation = output.innerText.replace(/sin|cos|tan|arcsin|arccos|arctan|sinh|cosh|tanh|cot|arccot|sec|arcsec|csc|arccsc/g, function(match) {
+            return "Math." + match; // Prepend Math. to trig functions so they are recognized by JavaScript
+        });
+
+        // Evaluate the equation using eval (you might want to replace eval with a safer parser for production)
+        let result = eval(equation);
         output.innerText = result;
+
+        // Optionally, plot the result on the graph
         plotGraph(output.innerText); // Update graph with the new result
     } catch (e) {
         output.innerText = "Error";
@@ -75,18 +88,6 @@ function plotGraph(equation) {
         .attr("stroke-width", 2);
 }
 
-// Insert exponentiation (e.g., x^y)
-function insertExponent() {
-    let output = document.getElementById('output');
-    output.innerText += "^";
-}
-
-// Insert subscript (e.g., xₙ)
-function insertSubscript() {
-    let output = document.getElementById('output');
-    output.innerText += "ₙ";
-}
-
 // Function to display the fraction input form
 function insertFraction() {
     let output = document.getElementById('output');
@@ -128,6 +129,18 @@ function insertFraction() {
     }
 }
 
+// Insert exponentiation (e.g., x^y)
+function insertExponent() {
+    let output = document.getElementById('output');
+    output.innerText += "^";
+}
+
+// Insert subscript (e.g., xₙ)
+function insertSubscript() {
+    let output = document.getElementById('output');
+    output.innerText += "ₙ";
+}
+
 // Insert coordinate (e.g., (x, y))
 function insertCoordinate() {
     let output = document.getElementById('output');
@@ -140,10 +153,12 @@ function insertAlphabet() {
     output.innerText += "abc"; // Placeholder for alphabetic input
 }
 
-// Function to delete the last character in the output
-function deleteall() {
+
+// Function to clear the entire output
+function clearOutput() {
     let output = document.getElementById('output');
-    output.innerText = output.innerText.slice(0, -1);
+    output.innerText = ''; // Clear the output
+
 }
 
 // Function to move the cursor left
@@ -170,12 +185,6 @@ function insertTrigFunction(func) {
 }
 
 // Trigonometric Functions Dropdown
-function toggleTrigDropdown() {
-    var dropdown = document.getElementById("trigDropdown");
-    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-}
-
-// Add trig function buttons dynamically
 document.addEventListener("DOMContentLoaded", function() {
     const trigButtons = [
         'sin', 'arcsin', 'sinh', 'cos', 'arccos', 'cosh', 'tan', 'arctan', 'tanh', 
