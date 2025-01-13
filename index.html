@@ -60,6 +60,27 @@
             border: 2px solid #ccc;
             margin-top: 20px;
         }
+
+        #trigDropdown {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        #trigDropdown button {
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        #trigDropdown button:hover {
+            background-color: #ddd;
+        }
     </style>
 </head>
 <body>
@@ -79,10 +100,10 @@
             <button onclick="appendText('√')"> √ </button>
             <button onclick="appendText('∛')"> ∛ </button>
             <button onclick="appendText('≥')"> ≥ </button>
-            <button onclick="toggleTrigFunctions()"> Trig </button>
             <button onclick="toggleTable()"> Table </button>
             <button onclick="appendText('f(x)')"> f(x) </button>
             <button onclick="insertPiecewise()"> Piecewise </button>
+            <button onclick="toggleTrigDropdown()"> Trig </button>
 
             <!-- Row 2 -->
             <button onclick="appendText('x')"> x </button>
@@ -145,3 +166,4 @@
     <script src="app.js"></script> <!-- External JS -->
 </body>
 </html>
+
