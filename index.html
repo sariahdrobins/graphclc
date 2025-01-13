@@ -61,26 +61,37 @@
             margin-top: 20px;
         }
 
+        /* Trigonometric Functions Dropdown */
         #trigDropdown {
             display: none;
             position: absolute;
             background-color: #f9f9f9;
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
             z-index: 1;
+            width: 200px; /* Width for the dropdown */
+            height: 300px; /* Height for the dropdown */
+            overflow-y: auto; /* Makes the dropdown scrollable if it exceeds the set height */
+            border-radius: 5px; /* Optional, for rounded corners */
+            padding: 10px; /* Adds some padding inside the dropdown */
         }
-
+        
+        /* Style for buttons inside the dropdown */
         #trigDropdown button {
-            padding: 10px;
-            background-color: #f1f1f1;
-            border: none;
-            width: 100%;
-            text-align: left;
+            width: 100%; /* Make each button the full width of the dropdown */
+            padding: 8px;
+            margin: 2px 0;
+            background-color: #d8d8d8;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #trigDropdown button:hover {
+            background-color: #b8b8b8;
         }
 
-        #trigDropdown button:hover {
-            background-color: #ddd;
-        }
     </style>
 </head>
 <body>
