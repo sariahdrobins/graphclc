@@ -141,7 +141,7 @@ function insertAlphabet() {
 }
 
 // Function to delete the last character in the output
-function deleteLast() {
+function deleteall() {
     let output = document.getElementById('output');
     output.innerText = output.innerText.slice(0, -1);
 }
