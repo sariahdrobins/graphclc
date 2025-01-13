@@ -134,6 +134,22 @@ function insertExponent() {
     let output = document.getElementById('output');
     output.innerText += "^";
 }
+// Function to calculate the result based on the input
+function calculate() {
+    let output = document.getElementById('output');
+    try {
+        let expression = output.innerText;
+
+        // Replace ^ with ** for proper exponentiation handling in JavaScript
+        expression = expression.replace(/\^/g, '**'); // Replace all '^' with '**'
+
+        let result = eval(expression); // Basic eval for now, but it will handle exponentiation properly
+        output.innerText = result;
+        plotGraph(result); // Update graph with the new result (optional)
+    } catch (e) {
+        output.innerText = "Error";
+    }
+}
 
 // Insert subscript (e.g., xₙ)
 function insertSubscript() {
