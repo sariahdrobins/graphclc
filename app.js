@@ -87,10 +87,45 @@ function insertSubscript() {
     output.innerText += "ₙ";
 }
 
-// Insert mixed fraction (e.g., 1 ½)
-function insertMixedFraction() {
+// Function to display the fraction input form
+function insertFraction() {
     let output = document.getElementById('output');
-    output.innerText += "1 ½"; // Placeholder for mixed fraction functionality
+    
+    // Create fraction form if not already created
+    if (!document.getElementById('fractionForm')) {
+        let fractionForm = document.createElement('div');
+        fractionForm.id = 'fractionForm';
+        
+        // Numerator input field
+        let numeratorInput = document.createElement('input');
+        numeratorInput.type = 'text';
+        numeratorInput.id = 'numerator';
+        numeratorInput.placeholder = 'Numerator';
+        
+        // Denominator input field
+        let denominatorInput = document.createElement('input');
+        denominatorInput.type = 'text';
+        denominatorInput.id = 'denominator';
+        denominatorInput.placeholder = 'Denominator';
+        
+        // Submit button to insert the fraction
+        let submitButton = document.createElement('button');
+        submitButton.innerText = 'Submit Fraction';
+        submitButton.onclick = function() {
+            let numerator = document.getElementById('numerator').value;
+            let denominator = document.getElementById('denominator').value;
+            if (numerator && denominator) {
+                output.innerText += `${numerator}/${denominator}`; // Insert fraction into the output
+                document.getElementById('fractionForm').remove(); // Remove the form after submitting
+            }
+        };
+
+        // Append the form to the calculator
+        fractionForm.appendChild(numeratorInput);
+        fractionForm.appendChild(denominatorInput);
+        fractionForm.appendChild(submitButton);
+        document.body.appendChild(fractionForm);
+    }
 }
 
 // Insert coordinate (e.g., (x, y))
