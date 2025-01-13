@@ -1,56 +1,98 @@
-// Function to append text to the output (handles trigonometric functions properly)
+/*********************************************************
+ * 1. CORE HELPER FUNCTIONS
+ *********************************************************/
+
+// Clears the entire output
+function clearOutput() {
+    document.getElementById('output').innerText = "0";
+}
+
+// Appends text (numbers, symbols, or partial expressions) to the output
 function appendText(text) {
     let output = document.getElementById('output');
-    if (output.innerText === '0') {
+
+    // If current text is just "0", we replace it
+    if (output.innerText === "0") {
+        // If it's a trig function with parentheses, just replace
         output.innerText = text;
     } else {
-        // Ensure that trigonometric functions like sin, cos, etc., append with parentheses
-        if (["sin", "cos", "tan", "arcsin", "arccos", "arctan", "sinh", "cosh", "tanh", "cot", "arccot", "sec", "arcsec", "csc", "arccsc"].includes(text)) {
-            output.innerText += text + "("; // Add parentheses for trig functions
-        } else {
-            output.innerText += text;
-        }
+        output.innerText += text;
     }
 }
 
-// Function to toggle the trig functions dropdown
-function toggleTrigDropdown() {
-    var dropdown = document.getElementById("trigDropdown");
-    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-}
+/*********************************************************
+ * 2. CALCULATION & GRAPHING
+ *********************************************************/
 
-// Function to calculate the result based on the input
+// Main calculation function
 function calculate() {
     let output = document.getElementById('output');
     try {
-        // Ensure that all mathematical functions (like sin, cos, etc.) are properly recognized
-        let equation = output.innerText.replace(/sin|cos|tan|arcsin|arccos|arctan|sinh|cosh|tanh|cot|arccot|sec|arcsec|csc|arccsc/g, function(match) {
-            return "Math." + match; // Prepend Math. to trig functions so they are recognized by JavaScript
+        // 1. Retrieve the user expression
+        let expression = output.innerText;
+
+        // 2. Replace '^' with '**' for exponentiation
+        expression = expression.replace(/\^/g, '**');
+
+        // 3. Prepend "Math." to recognized trig functions
+        //    e.g., sin(...) => Math.sin(...), tan(...) => Math.tan(...), etc.
+        expression = expression.replace(
+            /\b(sin|cos|tan|arcsin|arccos|arctan|sinh|cosh|tanh|cot|arccot|coth|sec|arcsec|sech|csc|arccsc|csch)\(/g,
+            (match, fnName) => "Math." + fnName + "("
+        );
+
+        // 4. Handle ln(...) => Math.log(...)
+        expression = expression.replace(/\bln\(/g, "Math.log(");
+
+        // 5. Handle log(...) => interpret as base-10 => Math.log10(...)
+        expression = expression.replace(/\blog\(/g, "Math.log10(");
+
+        // 6. Handle log_b(...) => prompt user for base
+        expression = expression.replace(/log_b\(([^)]+)\)/g, function(match, innerExpr) {
+            let base = prompt("Enter the base for log_b:");
+            if (!base) base = 10; 
+            return `Math.log(${innerExpr})/Math.log(${base})`; 
         });
 
-        // Evaluate the equation using eval (you might want to replace eval with a safer parser for production)
-        let result = eval(equation);
+        // 7. Evaluate the expression
+        let result = eval(expression);
+
+        // 8. Update the output
         output.innerText = result;
 
-        // Optionally, plot the result on the graph
-        plotGraph(output.innerText); // Update graph with the new result
+        // 9. Plot the expression if it contains x, otherwise clear the graph
+        if (expression.includes("x")) {
+            plotGraph(expression);
+        } else {
+            d3.select("#graph").html("");
+        }
     } catch (e) {
         output.innerText = "Error";
     }
 }
 
-// Function to plot the graph using D3.js
-function plotGraph(equation) {
-    let xValues = Array.from({ length: 20 }, (_, i) => i - 10);
+// D3.js function to plot the expression if it contains 'x'
+function plotGraph(expression) {
+    // Evaluate from x = -10 to x = 10 in steps of 0.1
+    let xValues = [];
+    let step = 0.1;
+    for (let i = -10; i <= 10; i += step) {
+        xValues.push(i);
+    }
+
     let yValues = xValues.map(x => {
+        // Replace x with numeric value in expression
+        let localExpr = expression.replace(/x/g, `(${x})`);
         try {
-            return eval(equation.replace('x', x)); // Evaluate the equation for each x value
+            return eval(localExpr);
         } catch (e) {
-            return NaN; // Return NaN if the evaluation fails
+            return NaN;
         }
     });
 
-    let width = 500, height = 300;
+    // D3 chart setup
+    let width = 500,
+        height = 300;
     let margin = { top: 10, right: 10, bottom: 30, left: 40 };
 
     d3.select("#graph").html(""); // Clear previous graph
@@ -59,162 +101,136 @@ function plotGraph(equation) {
         .attr("width", width)
         .attr("height", height)
         .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    let xScale = d3.scaleLinear().domain([d3.min(xValues), d3.max(xValues)]).range([0, width - margin.left - margin.right]);
-    let yScale = d3.scaleLinear().domain([d3.min(yValues), d3.max(yValues)]).range([height - margin.top - margin.bottom, 0]);
+    let minX = d3.min(xValues),
+        maxX = d3.max(xValues);
+    let minY = d3.min(yValues),
+        maxY = d3.max(yValues);
 
+    let xScale = d3.scaleLinear()
+        .domain([minX, maxX])
+        .range([0, width - margin.left - margin.right]);
+
+    let yScale = d3.scaleLinear()
+        .domain([minY, maxY])
+        .range([height - margin.top - margin.bottom, 0]);
+
+    // X-Axis
     svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", "translate(0," + (height - margin.top - margin.bottom) + ")")
+        .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
         .call(d3.axisBottom(xScale));
 
+    // Y-Axis
     svg.append("g")
-        .attr("class", "y-axis")
         .call(d3.axisLeft(yScale));
 
-    let line = d3.line()
-        .x(d => xScale(d.x))
-        .y(d => yScale(d.y));
+    // Create line
+    let lineGen = d3.line()
+        .x((d, i) => xScale(d.x))
+        .y((d, i) => yScale(d.y));
 
-    let data = xValues.map((x, index) => ({ x: x, y: yValues[index] }));
+    let data = xValues.map((x, i) => ({ x: x, y: yValues[i] }));
 
     svg.append("path")
         .data([data])
-        .attr("class", "line")
-        .attr("d", line)
+        .attr("d", lineGen)
         .attr("fill", "none")
         .attr("stroke", "steelblue")
         .attr("stroke-width", 2);
 }
 
-// Function to display the fraction input form
-function insertFraction() {
-    let output = document.getElementById('output');
-    
-    // Create fraction form if not already created
-    if (!document.getElementById('fractionForm')) {
-        let fractionForm = document.createElement('div');
-        fractionForm.id = 'fractionForm';
-        
-        // Numerator input field
-        let numeratorInput = document.createElement('input');
-        numeratorInput.type = 'text';
-        numeratorInput.id = 'numerator';
-        numeratorInput.placeholder = 'Numerator';
-        
-        // Denominator input field
-        let denominatorInput = document.createElement('input');
-        denominatorInput.type = 'text';
-        denominatorInput.id = 'denominator';
-        denominatorInput.placeholder = 'Denominator';
-        
-        // Submit button to insert the fraction
-        let submitButton = document.createElement('button');
-        submitButton.innerText = 'Submit Fraction';
-        submitButton.onclick = function() {
-            let numerator = document.getElementById('numerator').value;
-            let denominator = document.getElementById('denominator').value;
-            if (numerator && denominator) {
-                output.innerText += `${numerator}/${denominator}`; // Insert fraction into the output
-                document.getElementById('fractionForm').remove(); // Remove the form after submitting
-            }
-        };
+/*********************************************************
+ * 3. ADDITIONAL CALCULATOR FEATURES
+ *********************************************************/
 
-        // Append the form to the calculator
-        fractionForm.appendChild(numeratorInput);
-        fractionForm.appendChild(denominatorInput);
-        fractionForm.appendChild(submitButton);
-        document.body.appendChild(fractionForm);
-    }
-}
-
-// Insert exponentiation (e.g., x^y)
+// Insert exponent symbol '^' (calc logic will handle '^' => '**')
 function insertExponent() {
     let output = document.getElementById('output');
-    output.innerText += "^";
-}
-// Function to calculate the result based on the input
-function calculate() {
-    let output = document.getElementById('output');
-    try {
-        let expression = output.innerText;
-
-        // Replace ^ with ** for proper exponentiation handling in JavaScript
-        expression = expression.replace(/\^/g, '**'); // Replace all '^' with '**'
-
-        let result = eval(expression); // Basic eval for now, but it will handle exponentiation properly
-        output.innerText = result;
-        plotGraph(result); // Update graph with the new result (optional)
-    } catch (e) {
-        output.innerText = "Error";
+    if (output.innerText === "0") {
+        output.innerText = "^";
+    } else {
+        output.innerText += "^";
     }
 }
 
-// Insert subscript (e.g., xₙ)
+// Insert subscript symbol (xₙ)
 function insertSubscript() {
     let output = document.getElementById('output');
-    output.innerText += "ₙ";
+    if (output.innerText === "0") {
+        output.innerText = "ₙ";
+    } else {
+        output.innerText += "ₙ";
+    }
 }
 
-// Insert coordinate (e.g., (x, y))
+// Insert fraction (quick approach: "1/2")
+function insertFraction() {
+    let output = document.getElementById('output');
+    if (output.innerText === "0") {
+        output.innerText = "1/2";
+    } else {
+        output.innerText += "1/2";
+    }
+}
+
+// Insert coordinate (e.g., (x,y))
 function insertCoordinate() {
     let output = document.getElementById('output');
-    output.innerText += "(x, y)";
+    if (output.innerText === "0") {
+        output.innerText = "(x,y)";
+    } else {
+        output.innerText += "(x,y)";
+    }
 }
 
 // Insert alphabetic characters
 function insertAlphabet() {
     let output = document.getElementById('output');
-    output.innerText += "abc"; // Placeholder for alphabetic input
+    if (output.innerText === "0") {
+        output.innerText = "abc";
+    } else {
+        output.innerText += "abc";
+    }
 }
 
-
-// Function to clear the entire output
-function clearOutput() {
-    let output = document.getElementById('output');
-    output.innerText = ''; // Clear the output
-
-}
-
-// Function to move the cursor left
-function moveCursor(direction) {
-    let output = document.getElementById('output');
-    // Extend to handle cursor movement
-}
-
-// Function to toggle table visibility
-function toggleTable() {
-    // Add functionality for table display
-}
-
-// Insert Piecewise function (Placeholder)
+// Insert piecewise (placeholder)
 function insertPiecewise() {
     let output = document.getElementById('output');
-    output.innerText += "{f(x)}"; // Placeholder for piecewise function
+    if (output.innerText === "0") {
+        output.innerText = "{f(x)}";
+    } else {
+        output.innerText += "{f(x)}";
+    }
 }
 
-// Trigonometric functions for dropdown
-function insertTrigFunction(func) {
+// Clear the entire output
+function clearOutput() {
+    document.getElementById('output').innerText = "0";
+}
+
+// Move the cursor left or right (placeholder)
+function moveCursor(direction) {
+    // If you want advanced cursor movement, you'd need a more robust approach
+}
+
+// Toggling the table (placeholder)
+function toggleTable() {
+    // Future logic for showing/hiding a table
+}
+
+// Submitting input (placeholder)
+function submitInput() {
     let output = document.getElementById('output');
-    output.innerText += func;
+    console.log("Submitted: " + output.innerText);
 }
 
-// Trigonometric Functions Dropdown
-document.addEventListener("DOMContentLoaded", function() {
-    const trigButtons = [
-        'sin', 'arcsin', 'sinh', 'cos', 'arccos', 'cosh', 'tan', 'arctan', 'tanh', 
-        'cot', 'arccot', 'coth', 'sec', 'arcsec', 'sech', 'csc', 'arccsc', 'csch'
-    ];
+/*********************************************************
+ * 4. TRIG FUNCTIONS DROPDOWN
+ *********************************************************/
 
-    const trigDropdown = document.getElementById("trigDropdown");
-
-    trigButtons.forEach(function(func) {
-        const button = document.createElement("button");
-        button.innerHTML = func;
-        button.onclick = function() {
-            insertTrigFunction(func);
-        };
-        trigDropdown.appendChild(button);
-    });
-});
+// Toggle the trig functions dropdown
+function toggleTrigDropdown() {
+    var dropdown = document.getElementById("trigDropdown");
+    dropdown.style.display = (dropdown.style.display === "none") ? "block" : "none";
+}
