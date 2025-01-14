@@ -231,6 +231,31 @@ function submitInput() {
     const output = document.getElementById('output');
     console.log("Submitted: " + output.innerText);
 }
+function calculate() {
+    let output = document.getElementById('output');
+    try {
+        let expression = output.innerText;
+        
+        // Example: Convert '^' to '**' for exponents
+        expression = expression.replace(/\^/g, '**');
+        
+        // Square Root: √(...) => Math.sqrt(...)
+        // (Important to escape the √ symbol in the regex)
+        expression = expression.replace(/√\(/g, 'Math.sqrt(');
+
+        // ... handle trig, logs, etc. ...
+        
+        // Evaluate the final expression
+        let result = eval(expression); 
+        output.innerText = result;
+        
+        // If you do graphing, call your plotGraph function if needed
+        // e.g., if (expression.includes('x')) { plotGraph(expression); }
+    } catch (err) {
+        output.innerText = "Error";
+    }
+}
+
 
 /*********************************************************
  * 4. TRIG FUNCTIONS DROPDOWN
