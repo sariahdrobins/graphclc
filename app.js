@@ -231,34 +231,49 @@ function submitInput() {
     const output = document.getElementById('output');
     console.log("Submitted: " + output.innerText);
 }
+
 function calculate() {
     let output = document.getElementById('output');
     try {
         let expression = output.innerText;
         
-        // Example: Convert '^' to '**' for exponents
+        // 1) Convert '^' to '**' for exponentiation
         expression = expression.replace(/\^/g, '**');
         
-        // Square Root: √(...) => Math.sqrt(...)
-        // (Important to escape the √ symbol in the regex)
+        // 2) Convert √( => Math.sqrt(
         expression = expression.replace(/√\(/g, 'Math.sqrt(');
 
-        // Convert `∛(` => `Math.cbrt(`
-        expression = expression.replace(/∛\(/g, "Math.cbrt(");
+        // 3) Convert ∛( => Math.cbrt(
+        expression = expression.replace(/∛\(/g, 'Math.cbrt(');
 
-        // ... handle trig, logs, etc. ...
-        
-        // Evaluate the final expression
-        let result = eval(expression); 
+        // 4) Convert "≥" => ">="
+        expression = expression.replace(/≥/g, '>=');
+
+        // 5) Prepend "Math." to recognized trig functions
+        //    (sin, cos, tan, arcsin, arccos, arctan, sinh, cosh, tanh)
+        expression = expression.replace(
+            /\b(sin|cos|tan|arcsin|arccos|arctan|sinh|cosh|tanh)\(/g,
+            (_, fnName) => "Math." + fnName + "("
+        );
+
+        // ... If you handle logs or logs with base, do that here ...
+        // e.g., ln(...) => Math.log(...), log(...) => Math.log10(...),
+        // log_b(...) => (prompt for base)...
+
+        // 6) Evaluate the final expression
+        let result = eval(expression);
         output.innerText = result;
-        
-        // If you do graphing, call your plotGraph function if needed
-        // e.g., if (expression.includes('x')) { plotGraph(expression); }
+
+        // 7) If expression includes 'x', attempt to plot it; otherwise, clear graph
+        if (expression.includes('x')) {
+            plotGraph(expression);
+        } else {
+            d3.select("#graph").html("");
+        }
     } catch (err) {
         output.innerText = "Error";
     }
 }
-
 
 /*********************************************************
  * 4. TRIG FUNCTIONS DROPDOWN
