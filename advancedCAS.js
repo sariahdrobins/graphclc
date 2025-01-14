@@ -1,25 +1,55 @@
-/******************************************************************************
- * defineAndAnalyze():
- *   - Parses input "f(x)= expression"
- *   - Defines f in Nerdamer
- *   - Analyzes domain, derivative, critical points, intercepts, integrals
- *   - Attempts advanced approach for domain => intervals, range => min/max
- ******************************************************************************/
-function defineAndAnalyze() {
-  const input = document.getElementById('funcInput').value.trim();
+/**
+ * fXSingleApproach():
+ *    Single approach: The user types either:
+ *      "f(x)= (x-1)/(sqrt(x)-2)"  (function definition, advanced analysis)
+ *    or
+ *      "f(3)"                     (evaluate the existing function)
+ *    in the same input box, then clicks ONE button, e.g. "f(x)".
+ */
+function fXSingleApproach() {
+  const input = document.getElementById('funcLine').value.trim();
   const analysisDiv = document.getElementById('analysis');
   analysisDiv.innerHTML = '';
 
-  // Parse "f(x)=..."
-  if(!input.includes('=')) {
-    analysisDiv.innerHTML = `<p style="color:red;">Error: Please use "f(x)=..." format.</p>`;
-    return;
+  // Check if user typed "f(x)=..."
+  if (input.includes('=') && /\w+\(\w+\)=/.test(input)) {
+    // => This is a function definition, e.g. "f(x)= x^2+1"
+    defineAndAnalyzeSingle(input);
+  } else {
+    // Possibly "f(3)" => direct evaluation
+    const evalMatch = input.match(/^(\w+)\(([^)]+)\)$/);
+    if (evalMatch) {
+      const fnName = evalMatch[1]; // e.g. "f"
+      const arg    = evalMatch[2]; // e.g. "3"
+      evaluateSingle(fnName, arg);
+    } else {
+      // Not recognized => show error
+      analysisDiv.innerHTML = `
+        <p style="color:red;">
+          Error: Type either "f(x)= expression" or "f(3)".
+        </p>
+      `;
+    }
   }
+}
 
-  let [lhs, rhs] = input.split('=').map(s => s.trim());
+/**
+ * defineAndAnalyzeSingle(rawInput):
+ *   This replaces the old defineAndAnalyze(), using the same domain/
+ *   derivative/intercept logic. However, it doesn't read from #funcInput;
+ *   it directly takes the string "f(x)= expression" from fXSingleApproach().
+ */
+function defineAndAnalyzeSingle(rawInput) {
+  const analysisDiv = document.getElementById('analysis');
+  analysisDiv.innerHTML = '';
+
+  // e.g. rawInput = "f(x)= x^2+1"
+  let [lhs, rhs] = rawInput.split('=').map(s => s.trim());
   let fnMatch = lhs.match(/^(\w+)\((\w+)\)$/);
-  if(!fnMatch) {
-    analysisDiv.innerHTML = `<p style="color:red;">Error parsing function name. Expect "f(x)=...".</p>`;
+  if (!fnMatch) {
+    analysisDiv.innerHTML = `
+      <p style="color:red;">Error: must be "f(x)=..."</p>
+    `;
     return;
   }
   let functionName = fnMatch[1]; // e.g. "f"
@@ -29,57 +59,81 @@ function defineAndAnalyze() {
   try {
     nerdamer.setFunction(functionName, variableName, rhs);
   } catch(err) {
-    analysisDiv.innerHTML = `<p style="color:red;">Error defining function in Nerdamer: ${err.message}</p>`;
+    analysisDiv.innerHTML = `
+      <p style="color:red;">Error defining function in Nerdamer: ${err.message}</p>
+    `;
     return;
   }
 
+  // 2) Advanced domain/derivative/intercept/range analysis
   let html = `<h2>Function: ${functionName}(${variableName}) = ${rhs}</h2>`;
 
-  // 2) Domain analysis
+  // 2a) Domain analysis
   let domainAnalysis = analyzeDomain(rhs, variableName);
   html += `<p><strong>Domain (Intervals):</strong> <code>${domainAnalysis.text}</code></p>`;
 
-  // 3) Derivative
-  let derivativeStr, derivativeExpr;
+  // 2b) Derivative
+  let derivativeStr = "N/A";
   try {
-    derivativeExpr = nerdamer.diff(rhs, variableName);
-    derivativeStr = derivativeExpr.text();
-  } catch {
-    derivativeStr = "N/A";
-  }
+    derivativeStr = nerdamer.diff(rhs, variableName).text();
+  } catch {}
   html += `<p><strong>Derivative:</strong> <code>${derivativeStr}</code></p>`;
 
-  // 4) Critical points => derivative=0, and also domain must allow them
+  // 2c) Critical points
   let criticalPoints = findCriticalPoints(derivativeStr, variableName, domainAnalysis);
-  if(criticalPoints.length>0) {
-    html += `<p><strong>Critical Points (derivative=0):</strong> <code>${JSON.stringify(criticalPoints)}</code></p>`;
+  if (criticalPoints.length > 0) {
+    html += `<p><strong>Critical Points:</strong> <code>${JSON.stringify(criticalPoints)}</code></p>`;
   } else {
-    html += `<p><strong>Critical Points:</strong> None or not solvable in real domain</p>`;
+    html += `<p><strong>Critical Points:</strong> None or not solvable</p>`;
   }
 
-  // 5) Intercepts
-  let yInt = findYIntercept(functionName, variableName, domainAnalysis);
+  // 2d) Intercepts
+  let yInt  = findYIntercept(functionName, variableName, domainAnalysis);
   let xInts = findXIntercepts(functionName, variableName, domainAnalysis);
-
   html += `<p><strong>y-intercept:</strong> <code>${yInt}</code></p>`;
-  if(xInts.length>0) {
-    html += `<p><strong>x-intercepts (f(x)=0):</strong> <code>${JSON.stringify(xInts)}</code></p>`;
+  if (xInts.length > 0) {
+    html += `<p><strong>x-intercepts:</strong> <code>${JSON.stringify(xInts)}</code></p>`;
   } else {
-    html += `<p><strong>x-intercepts:</strong> None found or none real</p>`;
+    html += `<p><strong>x-intercepts:</strong> None or none real</p>`;
   }
 
-  // 6) Range estimation
+  // 2e) Range estimation
   let rangeEst = guessRange(rhs, variableName, domainAnalysis, criticalPoints);
   html += `<p><strong>Range (estimated):</strong> <code>${rangeEst}</code></p>`;
 
-  // 7) Indefinite integral
+  // 2f) Indefinite integral
   let indefinite = "N/A";
   try {
     indefinite = nerdamer(`integrate(${rhs},${variableName})`).text();
   } catch {}
-  html += `<p><strong>Indefinite Integral:</strong> <code>∫${rhs} d${variableName} = ${indefinite}</code></p>`;
+  html += `<p><strong>Indefinite Integral:</strong> 
+    <code>∫${rhs} d${variableName} = ${indefinite}</code></p>`;
 
   analysisDiv.innerHTML = html;
+}
+
+/**
+ * evaluateSingle(fnName, arg):
+ *   If the user typed "f(3)", we do nerdamer("f(3)").evaluate()
+ *   => numeric result, displayed in #analysis.
+ */
+function evaluateSingle(fnName, arg) {
+  const analysisDiv = document.getElementById('analysis');
+  analysisDiv.innerHTML = '';
+
+  try {
+    let val = nerdamer(`${fnName}(${arg})`).evaluate().text();
+    analysisDiv.innerHTML = `
+      <p><strong>Evaluation:</strong> 
+      <code>${fnName}(${arg}) = ${val}</code></p>
+    `;
+  } catch(err) {
+    analysisDiv.innerHTML = `
+      <p style="color:red;">
+        Error evaluating ${fnName}(${arg}): ${err.message}
+      </p>
+    `;
+  }
 }
 
 /***************************************************************
@@ -90,19 +144,18 @@ function defineAndAnalyze() {
  ***************************************************************/
 function analyzeDomain(expr, variable) {
   let constraints = [];
-  // We'll parse logs, sqrt, denominators, store them
 
   // logs => argument>0
   let logRegex = /\blog\s*\(\s*([^)]+)\)|\bln\s*\(\s*([^)]+)\)/g;
   let match;
-  while((match=logRegex.exec(expr))!==null) {
+  while((match = logRegex.exec(expr)) !== null) {
     let inside = match[1] || match[2];
     constraints.push(`${inside}>0`);
   }
 
   // sqrt(...) => inside≥0
   let sqrtRegex = /sqrt\s*\(\s*([^)]+)\)/g;
-  while((match=sqrtRegex.exec(expr))!==null) {
+  while((match = sqrtRegex.exec(expr)) !== null) {
     let inside = match[1];
     constraints.push(`${inside}>=0`);
   }
@@ -114,7 +167,7 @@ function analyzeDomain(expr, variable) {
   try {
     let symbolic = nerdamer(expr);
     let denomSym = symbolic.getDenom();
-    if(denomSym && denomSym.text()!=="1") {
+    if (denomSym && denomSym.text() !== "1") {
       // solve denom=0 => excluded
       let zeros = nerdamer(`solve(${denomSym.text()}=0, ${variable})`).evaluate().text();
       let zeroVals = parseNerdamerSolve(zeros);
@@ -127,7 +180,10 @@ function analyzeDomain(expr, variable) {
     }
   } catch(e) {}
 
-  let text = constraints.length>0 ? constraints.join(" & ") : "No explicit constraints => all reals";
+  let text = (constraints.length > 0) 
+    ? constraints.join(" & ") 
+    : "No explicit constraints => all reals";
+
   return { intervals, text };
 }
 
@@ -140,7 +196,7 @@ function parseNerdamerSolve(s) {
   if(!s) return [];
   if(s.startsWith("[")) {
     let inside = s.slice(1,-1);
-    return inside.split(',').map(x=>x.trim());
+    return inside.split(',').map(x => x.trim());
   }
   if(s.includes("=")) {
     let eqParts = s.split("=");
@@ -159,13 +215,13 @@ function parseNerdamerSolve(s) {
  *   derivative=0 => solve. Then filter out solutions not in domain
  ***************************************************************/
 function findCriticalPoints(derivativeStr, variable, domainAnalysis) {
-  if(!derivativeStr || derivativeStr==="0" || derivativeStr==="N/A") return [];
+  if(!derivativeStr || derivativeStr === "0" || derivativeStr === "N/A") return [];
   let solutions = [];
   try {
     let sol = nerdamer(`solve(${derivativeStr}=0, ${variable})`).evaluate().text();
     let arr = parseNerdamerSolve(sol);
     solutions = arr; 
-  } catch(e){}
+  } catch(e) {}
   return solutions;
 }
 
@@ -207,15 +263,16 @@ function guessRange(expr, variable, domainAnalysis, criticalPoints) {
   let maxDomain = Infinity;
   let constraints = domainStr.split("&");
 
-  constraints.forEach(c=>{
+  // parse constraints like "x>=2", "x>3"
+  constraints.forEach(c => {
     let m = c.match(/(x)([><]=?)([\d\.]+)/);
     if(m) {
       let op = m[2];
       let val = parseFloat(m[3]);
-      if(op===">=" || op===">") {
-        if(val>minDomain) minDomain = val;
-      } else if(op==="<=" || op==="<") {
-        if(val<maxDomain) maxDomain = val;
+      if(op === ">=" || op === ">") {
+        if(val > minDomain) minDomain = val;
+      } else if(op === "<=" || op === "<") {
+        if(val < maxDomain) maxDomain = val;
       }
     }
   });
@@ -223,30 +280,31 @@ function guessRange(expr, variable, domainAnalysis, criticalPoints) {
   if(Number.isFinite(minDomain)) sampleXs.push(minDomain);
   if(Number.isFinite(maxDomain)) sampleXs.push(maxDomain);
 
-  criticalPoints.forEach(cp=>{
+  // also evaluate at critical points
+  criticalPoints.forEach(cp => {
     let num = parseFloat(cp);
     if(!isNaN(num)) sampleXs.push(num);
   });
 
   let vals = [];
-  sampleXs.forEach(x=>{
-    if(x>=minDomain && x<=maxDomain) {
+  sampleXs.forEach(x => {
+    if(x >= minDomain && x <= maxDomain) {
       let replaced = expr.replace(new RegExp(variable,"g"), `(${x})`);
       try {
         let val = eval(replaced);
         vals.push(val);
-      } catch{}
+      } catch {}
     }
   });
 
-  if(vals.length<1) {
+  if(vals.length < 1) {
     return "No finite sample points. Possibly (-∞,∞) or more complex. Additional numeric scanning recommended.";
   }
 
   let minVal = Math.min(...vals);
   let maxVal = Math.max(...vals);
 
-  if(minVal===maxVal) {
+  if(minVal === maxVal) {
     return `{${minVal}} (seems constant or only one sample)`;
   }
   if(!Number.isFinite(minDomain) || !Number.isFinite(maxDomain)) {
