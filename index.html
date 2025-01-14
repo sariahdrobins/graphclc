@@ -1,201 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graphing Calculator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
+  <meta charset="UTF-8">
+  <title>Calculator with Math.js</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* changed to flex-start for demonstration */
+        height: 100vh;
+        margin: 0;
+        background-color: #f5f5f5;
+    }
 
-        .calculator {
-            background-color: #e5e5e5;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 80%;
-            max-width: 600px;
-        }
+    .calculator {
+        background-color: #e5e5e5;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 80%;
+        max-width: 600px;
+        margin-top: 10px;
+    }
 
-        .output {
-            background-color: #fff;
-            padding: 20px;
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-align: right;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
+    .output {
+        background-color: #fff;
+        padding: 20px;
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-align: right;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
 
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 10px;
-        }
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 10px;
+    }
 
-        .button-grid button {
-            padding: 15px;
-            background-color: #d8d8d8;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    .button-grid button {
+        padding: 15px;
+        background-color: #d8d8d8;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
 
-        .button-grid button:hover {
-            background-color: #b8b8b8;
-        }
+    .button-grid button:hover {
+        background-color: #b8b8b8;
+    }
 
-        .graph {
-            width: 100%;
-            height: 400px;
-            border: 2px solid #ccc;
-            margin-top: 20px;
-        }
+    .graph {
+        width: 100%;
+        height: 400px;
+        border: 2px solid #ccc;
+        margin-top: 20px;
+    }
 
-        /* Trigonometric Functions Dropdown */
-        #trigDropdown {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-            width: 200px; /* Width for the dropdown */
-            height: 300px; /* Height for the dropdown */
-            overflow-y: auto; /* Makes the dropdown scrollable if it exceeds the set height */
-            border-radius: 5px; /* Optional, for rounded corners */
-            padding: 10px; /* Adds some padding inside the dropdown */
-        }
-        
-        /* Style for buttons inside the dropdown */
-        #trigDropdown button {
-            width: 30%; /* Make each button the full width of the dropdown */
-            padding: 8px;
-            margin: 2px 0;
-            background-color: #d8d8d8;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        #trigDropdown button:hover {
-            background-color: #b8b8b8;
-        }
+    /* Trigonometric Functions Dropdown */
+    #trigDropdown {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        width: 200px; 
+        height: 300px; 
+        overflow-y: auto; 
+        border-radius: 5px; 
+        padding: 10px;
+    }
+    
+    #trigDropdown button {
+        width: 30%;
+        padding: 8px;
+        margin: 2px 0;
+        background-color: #d8d8d8;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    #trigDropdown button:hover {
+        background-color: #b8b8b8;
+    }
 
-    </style>
+    /* Simple container for functionDef and expression inputs */
+    .function-inputs {
+      margin-bottom: 20px;
+    }
+    .function-inputs h3 {
+      margin: 5px 0;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="calculator">
-        <!-- Graphing Area -->
-        <div id="graph" class="graph"></div>
+  <!-- 
+    1) Section for user-defined functions (math.js approach)
+    2) Section for user expression
+    3) Then the main "calculator" structure
+  -->
 
-        <div class="output" id="output">0</div>
+  <div class="calculator">
 
-        <div class="button-grid">
-            <!-- Row 1 -->
-            <button onclick="appendText('(')"> ( </button>
-            <button onclick="appendText(')')"> ) </button>
-            <button onclick="appendText('|')"> | </button>
-            <button onclick="appendText('[')"> [ </button>
-            <button onclick="appendText(']')"> ] </button>
-            <button onclick="appendText('√(')">√</button>
-            <button onclick="appendText('∛(')"> ∛ </button>
-            <button onclick="appendText('≥')"> ≥ </button>
-            <button onclick="appendText('f(')"> f(x) </button>
-            <button onclick="insertPiecewise()"> Piecewise </button>
-            <button onclick="toggleTrigDropdown()"> Trig </button>
+    <!-- Graphing Area -->
+    <div id="graph" class="graph"></div>
 
-            <!-- Row 2 -->
-            <button onclick="appendText('x')"> x </button>
-            <button onclick="appendText('7')"> 7 </button>
-            <button onclick="appendText('8')"> 8 </button>
-            <button onclick="appendText('9')"> 9 </button>
-            <button onclick="insertExponent()"> xʳ </button> 
-            <button onclick="insertSubscript()"> xₙ </button> 
-            <button onclick="appendText('≤')"> ≤ </button>
-            <button onclick="appendText('ln')"> ln </button>
-            <button onclick="appendText('e')"> e </button>
-            <button onclick="appendText('∅')"> ∅ </button>
-            <button onclick="appendText('°')"> ° </button>
+    <!-- The main output area for the old “calc” logic -->
+    <div class="output" id="output">0</div>
 
-            <!-- Row 3 -->
-            <button onclick="appendText('y')"> y </button>
-            <button onclick="appendText('4')"> 4 </button>
-            <button onclick="appendText('5')"> 5 </button>
-            <button onclick="appendText('6')"> 6 </button>
-            <button onclick="appendText('/')"> / </button>
-            <button onclick="appendText('^')"> ^ </button>
-            <button onclick="appendText('x')"> x </button>
-            <button onclick="appendText('>')"> > </button>
-            <button onclick="appendText('log')"> log </button>
-            <button onclick="appendText('log_b')"> log_b </button>
-            <button onclick="appendText('i')"> i </button>
-            <button onclick="appendText('π')"> π </button>
+    <!-- 
+      Additional function definitions + expression evaluation
+      using math.js 
+    -->
+    <div class="function-inputs">
+      <h3>Define a function:</h3>
+      <input type="text" id="functionDef" placeholder="f(x)=x^2+1">
+      <button onclick="defineFunction()">Define</button>
 
-            <!-- Row 4 -->
-            <button onclick="appendText('z')"> z </button>
-            <button onclick="appendText('1')"> 1 </button>
-            <button onclick="appendText('2')"> 2 </button>
-            <button onclick="appendText('3')"> 3 </button>
-            <button onclick="appendText('-')"> - </button>
-            <button onclick="appendText('+')"> + </button>
-            <button onclick="appendText('/')"> / </button>
-            <button onclick="appendText('<')"> < </button>
-            <button onclick="insertFraction()"> ½ </button> 
-            <button onclick="insertCoordinate()"> (x,y) </button>
-            <button onclick="appendText('r')"> r </button>
-            <button onclick="appendText('!')"> ! </button>
-
-            <!-- Row 5 -->
-            <button onclick="insertAlphabet()"> abc </button>
-            <button onclick="appendText(',')"> , </button>
-            <button onclick="appendText('0')"> 0 </button>
-            <button onclick="appendText('.')"> . </button>
-            <button onclick="appendText('%')"> % </button>
-            <button onclick="appendText(' ')"> "______" </button>
-            <button onclick="calculate()"> = </button>
-            <button onclick="moveCursor('left')"> ← </button>
-            <button onclick="moveCursor('right')"> → </button>
-            <button onclick="clearOutput()"> Clear </button>
-            <button onclick="calculate()"> Enter </button>
-        </div>
+      <h3>Expression to Evaluate (math.js):</h3>
+      <input type="text" id="expression" placeholder="f(3)+2">
+      <button onclick="evaluateExpression()">Evaluate</button>
+      <p>Result: <span id="result"></span></p>
     </div>
 
-    <!-- Trigonometric Functions Dropdown -->
-        <div id="trigDropdown" style="display:none; position:absolute; background-color:#f9f9f9; box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); z-index: 1;">
-            <button onclick="appendText('sin')">sin()</button>
-            <button onclick="appendText('arcsin')">arcsin()</button>
-            <button onclick="appendText('sinh')">sinh()</button>
-            <button onclick="appendText('cos')">cos()</button>
-            <button onclick="appendText('arccos')">arccos()</button>
-            <button onclick="appendText('cosh')">cosh()</button>
-            <button onclick="appendText('tan')">tan()</button>
-            <button onclick="appendText('arctan')">arctan()</button>
-            <button onclick="appendText('tanh')">tanh()</button>
-            <button onclick="appendText('cot')">cot()</button>
-            <button onclick="appendText('arccot')">arccot()</button>
-            <button onclick="appendText('coth')">coth()</button>
-            <button onclick="appendText('sec')">sec()</button>
-            <button onclick="appendText('arcsec')">arcsec()</button>
-            <button onclick="appendText('sech')">sech()</button>
-            <button onclick="appendText('csc')">csc()</button>
-            <button onclick="appendText('arccsc')">arccsc()</button>
-            <button onclick="appendText('csch')">csch()</button>
-        </div>
+    <!-- The main button grid from your example -->
+    <div class="button-grid">
+      <!-- Row 1 -->
+      <button onclick="appendText('(')"> ( </button>
+      <button onclick="appendText(')')"> ) </button>
+      <button onclick="appendText('|')"> | </button>
+      <button onclick="appendText('[')"> [ </button>
+      <button onclick="appendText(']')"> ] </button>
+      <button onclick="appendText('√(')"> √ </button> 
+      <button onclick="appendText('∛(')"> ∛ </button> 
+      <button onclick="appendText('≥')"> ≥ </button>
+      <button onclick="toggleTable()"> Table </button>
+      <button onclick="appendText('f(x)')"> f(x) </button>
+      <button onclick="insertPiecewise()"> Piecewise </button>
+      <button onclick="toggleTrigDropdown()"> Trig </button>
 
+      <!-- Row 2 -->
+      <button onclick="appendText('x')"> x </button>
+      <button onclick="appendText('7')"> 7 </button>
+      <button onclick="appendText('8')"> 8 </button>
+      <button onclick="appendText('9')"> 9 </button>
+      <button onclick="insertExponent()"> xʳ </button> 
+      <button onclick="insertSubscript()"> xₙ </button> 
+      <button onclick="appendText('≤')"> ≤ </button>
+      <button onclick="appendText('ln(')"> ln </button>
+      <button onclick="appendText('e')"> e </button>
+      <button onclick="appendText('∅')"> ∅ </button>
+      <button onclick="appendText('°')"> ° </button>
 
-    <script src="https://d3js.org/d3.v6.min.js"></script> <!-- Include D3.js for graphing -->
-    <script src="app.js"></script> <!-- External JS -->
+      <!-- Row 3 -->
+      <button onclick="appendText('y')"> y </button>
+      <button onclick="appendText('4')"> 4 </button>
+      <button onclick="appendText('5')"> 5 </button>
+      <button onclick="appendText('6')"> 6 </button>
+      <button onclick="appendText('/')"> / </button>
+      <button onclick="appendText('^')"> ^ </button>
+      <button onclick="appendText('x')"> x </button>
+      <button onclick="appendText('>')"> > </button>
+      <button onclick="appendText('log(')"> log </button>
+      <button onclick="appendText('log_b(')"> log_b </button>
+      <button onclick="appendText('i')"> i </button>
+      <button onclick="appendText('π')"> π </button>
+
+      <!-- Row 4 -->
+      <button onclick="appendText('z')"> z </button>
+      <button onclick="appendText('1')"> 1 </button>
+      <button onclick="appendText('2')"> 2 </button>
+      <button onclick="appendText('3')"> 3 </button>
+      <button onclick="appendText('-')"> - </button>
+      <button onclick="appendText('+')"> + </button>
+      <button onclick="appendText('/')"> / </button>
+      <button onclick="appendText('<')"> < </button>
+      <button onclick="insertFraction()"> ½ </button> 
+      <button onclick="insertCoordinate()"> (x,y) </button>
+      <button onclick="appendText('r')"> r </button>
+      <button onclick="appendText('!')"> ! </button>
+
+      <!-- Row 5 -->
+      <button onclick="insertAlphabet()"> abc </button>
+      <button onclick="appendText(',')"> , </button>
+      <button onclick="appendText('0')"> 0 </button>
+      <button onclick="appendText('.')"> . </button>
+      <button onclick="appendText('%')"> % </button>
+      <button onclick="appendText(' ')"> "______" </button>
+      <button onclick="calculate()"> = </button>
+      <button onclick="moveCursor('left')"> ← </button>
+      <button onclick="moveCursor('right')"> → </button>
+      <button onclick="clearOutput()"> Clear </button>
+      <button onclick="calculate()"> Enter </button>
+    </div>
+  </div>
+
+  <!-- Trigonometric Functions Dropdown -->
+  <div id="trigDropdown">
+      <button onclick="appendText('sin(')">sin()</button>
+      <button onclick="appendText('arcsin(')">arcsin()</button>
+      <button onclick="appendText('sinh(')">sinh()</button>
+      <button onclick="appendText('cos(')">cos()</button>
+      <button onclick="appendText('arccos(')">arccos()</button>
+      <button onclick="appendText('cosh(')">cosh()</button>
+      <button onclick="appendText('tan(')">tan()</button>
+      <button onclick="appendText('arctan(')">arctan()</button>
+      <button onclick="appendText('tanh(')">tanh()</button>
+      <button onclick="appendText('cot(')">cot()</button>
+      <button onclick="appendText('arccot(')">arccot()</button>
+      <button onclick="appendText('coth(')">coth()</button>
+      <button onclick="appendText('sec(')">sec()</button>
+      <button onclick="appendText('arcsec(')">arcsec()</button>
+      <button onclick="appendText('sech(')">sech()</button>
+      <button onclick="appendText('csc(')">csc()</button>
+      <button onclick="appendText('arccsc(')">arccsc()</button>
+      <button onclick="appendText('csch(')">csch()</button>
+  </div>
+
+  <!-- Include Math.js and your custom JS for logic -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.js"></script>
+  <script src="https://d3js.org/d3.v6.min.js"></script>   
+  <script src="app.js"></script>
 </body>
 </html>
-
