@@ -18,15 +18,19 @@
       Additional function definitions + expression evaluation with math.js 
     -->
     <div class="function-inputs">
-      <h3>Define a function:</h3>
-      <input type="text" id="functionDef" placeholder="f(x)=x^2+1">
-      <button onclick="defineFunction()">Define</button>
+  <h3>Single Field: Type either "f(x)= expression" or "f(3)" or similar:</h3>
+  <input 
+    type="text" 
+    id="funcLine" 
+    placeholder="e.g. f(x)= x^2+1 or f(3)"
+    style="width:400px;"
+  />
+  <!-- One button: "f(x)" -->
+  <button onclick="fXSingleApproach()">f(x)</button>
 
-      <h3>Expression to Evaluate (math.js):</h3>
-      <input type="text" id="expression" placeholder="f(3)+2">
-      <button onclick="evaluateExpression()">Evaluate</button>
-      <p>Result: <span id="result"></span></p>
-    </div>
+  <!-- Where we display advanced analysis or direct evaluation results -->
+  <div id="analysis"></div>
+</div>
 
     <!-- The main button grid -->
     <div class="button-grid">
