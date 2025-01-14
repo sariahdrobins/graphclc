@@ -231,6 +231,9 @@ function submitInput() {
     const output = document.getElementById('output');
     console.log("Submitted: " + output.innerText);
 }
+function f(x) {
+    return x*x + 1; // sample definition
+}
 
 function calculate() {
     let output = document.getElementById('output');
