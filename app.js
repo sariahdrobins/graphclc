@@ -243,6 +243,9 @@ function calculate() {
         // (Important to escape the √ symbol in the regex)
         expression = expression.replace(/√\(/g, 'Math.sqrt(');
 
+                // **Cube root**: ∛( -> Math.cbrt(
+        expression = expression.replace(/∛\(/g, 'Math.cbrt(');
+
         // ... handle trig, logs, etc. ...
         
         // Evaluate the final expression
