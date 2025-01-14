@@ -1,46 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Extremely Advanced Mini CAS (Nerdamer)</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    #analysis {
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background: #f9f9f9;
-    }
-    p {
-      margin: 5px 0;
-    }
-    code {
-      background: #eee; 
-      padding: 2px 4px; 
-      border-radius: 3px;
-    }
-  </style>
-</head>
-<body>
-
-<h1>Extremely Advanced Mini CAS with Nerdamer</h1>
-<p>Type <code>f(x)=...</code> in the box below, then click Define &amp; Analyze.</p>
-<input id="funcInput" type="text" style="width: 500px;" placeholder="f(x)= (x-1)/(sqrt(x)-2)" />
-<button onclick="defineAndAnalyze()">Define &amp; Analyze</button>
-
-<div id="analysis"></div>
-
-<!-- Nerdamer core + modules -->
-<script src="https://nerdamer.com/js/nerdamer.core.js"></script>
-<script src="https://nerdamer.com/js/Algebra.js"></script>
-<script src="https://nerdamer.com/js/Calculus.js"></script>
-<script src="https://nerdamer.com/js/Extra.js"></script>
-
-<script>
 /******************************************************************************
  * defineAndAnalyze():
  *   - Parses input "f(x)= expression"
@@ -129,15 +86,13 @@ function defineAndAnalyze() {
  * analyzeDomain(expression, variable):
  *  - Finds constraints from logs (arg>0), sqrt (arg≥0), denominators (≠0)
  *  - Symbolically solves them => merges intervals
- *  - Returns { intervals: [ [start, end, open/closed], ... ], text: "..."}
- *    "text" is a string for display
+ *  - Returns { intervals: [ [start, end, open/closed], ... ], text: "..." }
  ***************************************************************/
 function analyzeDomain(expr, variable) {
   let constraints = [];
   // We'll parse logs, sqrt, denominators, store them
 
   // logs => argument>0
-  // naive approach: find ln(...) or log(...) ignoring base changes
   let logRegex = /\blog\s*\(\s*([^)]+)\)|\bln\s*\(\s*([^)]+)\)/g;
   let match;
   while((match=logRegex.exec(expr))!==null) {
@@ -162,10 +117,8 @@ function analyzeDomain(expr, variable) {
     if(denomSym && denomSym.text()!=="1") {
       // solve denom=0 => excluded
       let zeros = nerdamer(`solve(${denomSym.text()}=0, ${variable})`).evaluate().text();
-      // parse that => might be "[2]" or "2"
       let zeroVals = parseNerdamerSolve(zeros);
       zeroVals.forEach(zv => {
-        // if numeric, exclude that from domain
         let num = parseFloat(zv);
         if(!isNaN(num)) {
           constraints.push(`${variable}!=${num}`);
@@ -174,12 +127,8 @@ function analyzeDomain(expr, variable) {
     }
   } catch(e) {}
 
-  // We'll store them as text. A real approach merges intervals. Let's do partial merges:
-  // We'll attempt to solve each constraint with Nerdamer if possible => gather intervals
-  // For demonstration, we produce a naive combined string:
-
   let text = constraints.length>0 ? constraints.join(" & ") : "No explicit constraints => all reals";
-  return { intervals, text }; // not fully merged, but partial
+  return { intervals, text };
 }
 
 /***************************************************************
@@ -215,11 +164,8 @@ function findCriticalPoints(derivativeStr, variable, domainAnalysis) {
   try {
     let sol = nerdamer(`solve(${derivativeStr}=0, ${variable})`).evaluate().text();
     let arr = parseNerdamerSolve(sol);
-    // arr might be e.g. ["2","3"]
     solutions = arr; 
   } catch(e){}
-  // Potentially filter out domain invalid solutions
-  // We'll skip a complex domain check for demonstration
   return solutions;
 }
 
@@ -230,8 +176,6 @@ function findCriticalPoints(derivativeStr, variable, domainAnalysis) {
 function findYIntercept(fnName, variable, domainAnalysis) {
   try {
     let val = nerdamer(`${fnName}(0)`).evaluate().text();
-    // Check if "0" might be disallowed from domain
-    // We'll skip for demonstration
     return `(0, ${val})`;
   } catch(e) {
     return "N/A";
@@ -240,7 +184,7 @@ function findYIntercept(fnName, variable, domainAnalysis) {
 
 /***************************************************************
  * findXIntercepts(functionName, variable, domainAnalysis):
- *   Solve f(x)=0, filter domain if needed
+ *   Solve f(x)=0
  ***************************************************************/
 function findXIntercepts(fnName, variable, domainAnalysis) {
   try {
@@ -253,25 +197,16 @@ function findXIntercepts(fnName, variable, domainAnalysis) {
 
 /***************************************************************
  * guessRange(expr, variable, domainAnalysis, criticalPoints):
- *  - Evaluate at domain edges, criticalPoints, or we do a 
- *    partial approach to find min/max
+ *  - Evaluate at domain edges, criticalPoints, partial approach 
  *  - Real approach is extremely complex
  ***************************************************************/
 function guessRange(expr, variable, domainAnalysis, criticalPoints) {
-  // We'll do a naive approach:
-  // 1) if derivative=0 => maybe multiple local extrema => sample them
-  // 2) check domain boundaries if numeric
-  // 3) pick min & max from those samples
-  // We'll produce an interval. This remains partial.
-
   let sampleXs = [];
-  // Attempt to parse domainAnalysis.text for something like "x>=0" or "x>2"
-  // We'll do a quick parse for "x>=N" or "x>N" "x<=M" or "x<M" 
   let domainStr = domainAnalysis.text;
   let minDomain = -Infinity;
   let maxDomain = Infinity;
-  // naive parse:
   let constraints = domainStr.split("&");
+
   constraints.forEach(c=>{
     let m = c.match(/(x)([><]=?)([\d\.]+)/);
     if(m) {
@@ -284,17 +219,15 @@ function guessRange(expr, variable, domainAnalysis, criticalPoints) {
       }
     }
   });
-  // if minDomain is numeric, sample it
+
   if(Number.isFinite(minDomain)) sampleXs.push(minDomain);
   if(Number.isFinite(maxDomain)) sampleXs.push(maxDomain);
 
-  // also sample each critical point if numeric
   criticalPoints.forEach(cp=>{
     let num = parseFloat(cp);
     if(!isNaN(num)) sampleXs.push(num);
   });
 
-  // Evaluate function at each sample x. We'll store f(x) in an array
   let vals = [];
   sampleXs.forEach(x=>{
     if(x>=minDomain && x<=maxDomain) {
@@ -316,14 +249,8 @@ function guessRange(expr, variable, domainAnalysis, criticalPoints) {
   if(minVal===maxVal) {
     return `{${minVal}} (seems constant or only one sample)`;
   }
-  // If domain is infinite => we can't finalize
   if(!Number.isFinite(minDomain) || !Number.isFinite(maxDomain)) {
-    return `~[${minVal}, ${maxVal}] from sampled points, but domain extends further => actual range might be bigger.`;
+    return `~[${minVal}, ${maxVal}] from sampled points, domain extends => range might be bigger.`;
   }
-  // Otherwise produce interval
   return `[${minVal}, ${maxVal}] (estimated) from domain boundaries + critical points.`;
 }
-</script>
-
-</body>
-</html>
